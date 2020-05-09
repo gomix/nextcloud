@@ -1,0 +1,2 @@
+[nxcloud_servers]
+nextcloud-01 ansible_user=cloud ansible_host=142.44.201.176

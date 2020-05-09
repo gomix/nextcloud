@@ -1,0 +1,13 @@
+---
+- name: prepare my Centos8
+  hosts: nextcloud-01
+  become: yes
+  become_method: sudo
+  vars:
+
+  tasks:
+  - name: update my box
+    dnf:
+      name: "*"
+      state: latest
+
