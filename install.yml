@@ -1,0 +1,23 @@
+---
+- name: install nextcloud on my Centos8
+  hosts: nextcloud-01
+  become: yes
+  become_method: sudo
+  vars:
+
+  # Go to https://nextcloud.com/install and click the download server button 
+  # to see the latest version
+  #
+   
+  tasks:
+
+  - name: some basic dnf config
+    template:
+      src: etc/dnf/dnf.conf.j2
+      dest: /etc/dnf/dnf.conf
+
+  - name: update my box
+    dnf:
+      name: "*"
+      state: latest
+

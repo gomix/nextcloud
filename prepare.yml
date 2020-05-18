@@ -1,4 +1,7 @@
 ---
+# Buena documentación en....
+# https://docs.nextcloud.com/server/18/admin_manual/installation/example_centos.html
+#
 - name: prepare my Centos8
   hosts: nextcloud-01
   become: yes
@@ -6,8 +9,145 @@
   vars:
 
   tasks:
+  - name: some basic dnf config
+    template:
+      src: etc/dnf/dnf.conf.j2
+      dest: /etc/dnf/dnf.conf
+
   - name: update my box
     dnf:
       name: "*"
       state: latest
+
+  - name: enable epel repo
+    dnf:
+      name: epel-release
+      state: latest
+
+  # - name: Add REMI repository
+  #   yum_repository:
+  #     name: remi-modular
+  #     description: REMI modular YUM repo for CentOS 8
+  #     baseurl: http://rpms.remirepo.net/enterprise/8/modular/$basearch/
+  #   # Pendiente con los firmas GPG
+
+  #- name: enable dnf module php remi 7.4
+  #  comand: dnf module enable php:remi-7.4
+
+  - name: install sw requirements
+    dnf:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+        - firewalld
+        - httpd
+        - mod_ssl 
+        - openssl
+        - mariadb
+        - mariadb-server 
+        - php 
+        - php-cli 
+        - php-common
+        - php-fpm
+        - php-gd
+        - php-xml
+        - php-mysqlnd
+        - php-pecl-memcached
+        - php-pecl-apcu
+        - php-pecl-imagick
+        - php-pecl-redis5
+        - php-mbstring 
+        - php-intl 
+        - php-pecl-apcu 
+        - php-opcache 
+        - php-json 
+        - php-zip
+        - php-ldap
+        - php-smbclient
+        - php-imap
+        - php-gmp
+        - php-process
+        - redis
+        # PHP module posix  (???)
+        
+  - name: install extra sw 
+    dnf:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+        - vim
+        - lsof
+        - htop
+ 
+  - name: make sure Apache is started
+    service:
+      name: "httpd"
+      state: started
+
+  - name: make sure Apache is enabled at boot time
+    service:
+      name: "httpd"
+      enabled: yes
+
+# certbot broken from epel
+#
+# curl -O https://dl.eff.org/certbot-auto
+# mv certbot-auto /usr/local/bin
+# chmod 755 /usr/local/bin/certbot-auto
+#
+#  - Congratulations! Your certificate and chain have been saved at:
+#  /etc/letsencrypt/live/cloud.vana.gonkar.com/fullchain.pem
+#  Your key file has been saved at:
+#  /etc/letsencrypt/live/cloud.vana.gonkar.com/privkey.pem
+#  Your cert will expire on 2020-08-09. To obtain a new or tweaked
+#  version of this certificate in the future, simply run certbot-auto
+#  again with the "certonly" option. To non-interactively renew *all*
+#  of your certificates, run "certbot-auto renew"
+
+  - name: install firewalld
+    dnf:
+      name: firewalld
+      state: latest
+ 
+  - name: open web ports
+    firewalld:
+      port: "{{ item }}"
+      permanent: yes
+      state: enabled
+    loop:
+      - "22/tcp"
+      - "80/tcp"
+      - "443/tcp"
+ 
+  - name: enable mariadb service
+    service:
+      name: mariadb
+      enabled: yes
+
+  - name: start mariadb service
+    service:
+      name: mariadb
+      state: started
+
+  # myql_secure_installation
+  #
+  # vim /etc/my.cnf.d/mariadb-server.cnf 
+  
+  # REDIS #
+  - name: enable redis service
+    service:
+      name: redis 
+      enabled: yes
+
+  - name: start redis service
+    service:
+      name: redis
+      state: started
+
+# Descargar, descomprimir y desempaquetar en /var/www/html 
+# wget https://download.nextcloud.com/server/releases/nextcloud-18.0.4.tar.bz2
+# En otras palabras en webserver root
+# chown -R apache.apache /var/ww/html/
 
